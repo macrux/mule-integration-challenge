@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
-http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd">
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
     <s3:config name="Amazon_S3__Configuration" accessKey="AKIAJD3CVBRXLVLKX4DA" secretKey="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" doc:name="Amazon S3: Configuration"/>
     <flow name="mule-integration-challengeFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/getObject"  doc:name="HTTP"/>
-<!--         <set-variable variableName="filename" value="me" doc:name="Variable" /> -->
-        <s3:get-object config-ref="Amazon_S3__Configuration" bucketName="nemacrux2-bucket" doc:name="Amazon S3" key="#[message.inboundProperties.'http.query.params'.filename]"/>
-        <component class="org.mule.transformers.TestS3Object" doc:name="Java"/>
-        <json:xml-to-json-transformer doc:name="XML to JSON"/>
+     	<s3:get-object config-ref="Amazon_S3__Configuration" bucketName="nemacrux2-bucket" doc:name="Amazon S3" key="#[message.inboundProperties.'http.query.params'.filename]"/>
+        <custom-transformer class="com.helios.challenge.transformers.S3ObjectHandler" doc:name="Java S3Object Hanlder"/>
+<!--         <set-variable variableName="filename" value="#[message.payload.S3Object.key]" doc:name="Variable" /> -->
+        <custom-transformer class="com.helios.challenge.transformers.XmlToJsonTransformer" doc:name="Java Xml-Json Transformer"/>
+        <component class="com.helios.challenge.datalayer.JsonContentHandler" doc:name="Java Database Service"/>
         <logger message="#[message.payload]" level="INFO" doc:name="Logger"/>
     </flow>
 </mule>
