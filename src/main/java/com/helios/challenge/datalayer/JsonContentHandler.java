@@ -6,14 +6,14 @@ import org.mule.api.transport.PropertyScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.helios.challenge.service.DatabaseService;
-import com.helios.challenge.service.JsonDatabaseService;
+import com.helios.challenge.service.IDatabaseService;
+import com.helios.challenge.service.DatabaseMongoServiceImpl;
 import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
 public class JsonContentHandler implements Callable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(JsonContentHandler.class);
-	DatabaseService databaseService = new JsonDatabaseService();
+	IDatabaseService databaseService = new DatabaseMongoServiceImpl();
 	
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
