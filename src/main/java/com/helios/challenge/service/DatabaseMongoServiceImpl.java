@@ -25,6 +25,8 @@ import com.mongodb.client.MongoDatabase;
 
 public class DatabaseMongoServiceImpl implements IDatabaseService {
 
+	private static final String _ID_JSON_KEY = "_id";
+
 	private static final Logger logger = LoggerFactory.getLogger(DatabaseMongoServiceImpl.class);
 
 	private static final String DATABASE_NAME = "test";
@@ -67,6 +69,7 @@ public class DatabaseMongoServiceImpl implements IDatabaseService {
 		FindIterable<Document> iterable = collection.find(eq(FILENAME_JSON_KEY, filename));
 		Document document = iterable.first();
 		if (document != null) {
+			document.remove(_ID_JSON_KEY);
 			return document.toJson();
 		} else {
 			ErrorMessage errorMessage = new ErrorMessage(filename + " not found.", 400, "doc.helios.challenge.com/api/errors");
