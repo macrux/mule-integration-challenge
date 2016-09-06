@@ -1,5 +1,7 @@
 package com.helios.challenge.transformers;
 
+import static com.helios.challenge.constants.ChallengeConstants.FILENAME_MULE_MSG_PROPERTY;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,36 +15,54 @@ import org.mule.transformer.AbstractMessageTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mulesoft.mmc.agent.v3.dto.NullPayload;
+
 public class S3ObjectHandler extends AbstractMessageTransformer {
-	
-	public static final String FILENAME_MSG_PROPERTY = "filename";
+
 	private static final Logger logger = LoggerFactory.getLogger(S3ObjectHandler.class);
 
 	/**
 	 * Gets the message payload which is a S3Object. The content of this object
-	 * is an InputStream which is processed to obtain the object data into a String.
-	 * This String is set as the new message payload and the S3Object's key (the
-	 * filename) is set to the Mule Message as property.
+	 * is an InputStream which is processed to obtain the object data into a
+	 * String. This String is set as the new message payload and the S3Object's
+	 * key (the filename) is set to the Mule Message as property.
 	 */
 	@Override
 	public Object transformMessage(MuleMessage message, String outputEncoding) throws TransformerException {
-		BufferedReader bufferedReader = null;
-		S3Object s3Object = null;
+		S3Object s3Object = (S3Object) message.getPayload();
+		// The S3Object content is an InputStream from which
+		// a String is created
+		String xmlString = processInputStream(s3Object.getObjectContent());
+		// Change the full payload to S3Object content
+		if(!xmlString.isEmpty()){
+			message.setPayload(xmlString);	
+		} else {
+			message.setPayload(new NullPayload());
+		}
 
+		if (s3Object != null) {
+			try {
+				s3Object.close();
+			} catch (IOException e) {
+				logger.error("Exception closing S3Object: ", e);
+				e.printStackTrace();
+			}
+		}
+		// Add the filename as a Mule Message property
+		message.setProperty(FILENAME_MULE_MSG_PROPERTY, s3Object.getKey(), PropertyScope.INVOCATION);
+		return message;
+	}
+
+	private String processInputStream(InputStream inputStream) {
+		BufferedReader bufferedReader = null;
 		try {
-			s3Object = (S3Object) message.getPayload();
-			// The S3Object content is an InputStream from which
-			// a String is created
-			InputStream stream = s3Object.getObjectContent();
 			String line = "";
-			bufferedReader = new BufferedReader(new InputStreamReader(stream));
+			bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 			StringBuilder xmlStringBuilder = new StringBuilder();
 			while ((line = bufferedReader.readLine()) != null) {
 				xmlStringBuilder.append(line);
 			}
-			// Change the full payload to S3Object content
-			message.setPayload(xmlStringBuilder.toString());
-			return message;
+			return xmlStringBuilder.toString();
 		} catch (Exception e) {
 			logger.error("Exception in transform message method: ", e);
 		} finally {
@@ -55,21 +75,9 @@ public class S3ObjectHandler extends AbstractMessageTransformer {
 					e.printStackTrace();
 				}
 			}
-
-			if (s3Object != null) {
-				try {
-					s3Object.close();
-				} catch (IOException e) {
-					logger.error("Exception closing S3Object: ", e);
-					e.printStackTrace();
-				}
-			}
-			
-			// Add the filename as a Mule Message property
-			message.setProperty(FILENAME_MSG_PROPERTY, s3Object.getKey(), PropertyScope.INVOCATION);
 		}
-
-		return message;
+		
+		return "";
 	}
 
 }

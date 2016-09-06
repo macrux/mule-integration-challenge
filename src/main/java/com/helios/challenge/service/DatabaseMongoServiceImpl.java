@@ -1,14 +1,11 @@
 package com.helios.challenge.service;
 
-import static com.helios.challenge.transformers.XmlToJsonTransformer.FILENAME_JSON_KEY;
+import static com.helios.challenge.constants.ChallengeConstants.FILENAME_JSON_KEY;
+import static com.helios.challenge.constants.ChallengeConstants._ID_MONGO_KEY;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.bson.Document;
 import org.json.JSONObject;
@@ -16,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helios.challenge.database.MongoDB;
-import com.helios.challenge.model.ErrorMessage;
 import com.mongodb.Block;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
@@ -25,14 +21,13 @@ import com.mongodb.client.MongoDatabase;
 
 public class DatabaseMongoServiceImpl implements IDatabaseService {
 
-	private static final String _ID_JSON_KEY = "_id";
-
 	private static final Logger logger = LoggerFactory.getLogger(DatabaseMongoServiceImpl.class);
 
 	private static final String DATABASE_NAME = "test";
 	private static final String COLLECTION_NAME = "filetest";
 
 	private MongoDatabase database = MongoDB.getMongoDB(DATABASE_NAME);
+//	private MongoDatabase database = MongoDB.getMongoDB();
 	private MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
 
 	@Override
@@ -69,16 +64,11 @@ public class DatabaseMongoServiceImpl implements IDatabaseService {
 		FindIterable<Document> iterable = collection.find(eq(FILENAME_JSON_KEY, filename));
 		Document document = iterable.first();
 		if (document != null) {
-			document.remove(_ID_JSON_KEY);
+			document.remove(_ID_MONGO_KEY);
 			return document.toJson();
 		} else {
-			ErrorMessage errorMessage = new ErrorMessage(filename + " not found.", 400, "doc.helios.challenge.com/api/errors");
-			throw new NotFoundException(errorMessage.getErrorMessage(), Response
-					.status(Status.NOT_FOUND)
-					.entity(errorMessage)
-					.build());
+			return "";
 		}
-
 	}
 
 	@Override
