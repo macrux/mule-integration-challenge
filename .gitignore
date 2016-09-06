@@ -46,3 +46,6 @@ local.properties
 flows/
 target/
 **/*.mflow
+
+# access keys
+src/main/app/s3-access.properties

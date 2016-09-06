@@ -1,27 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
-http://www.mulesoft.org/schema/mule/jersey http://www.mulesoft.org/schema/mule/jersey/current/mule-jersey.xsd">
+http://www.mulesoft.org/schema/mule/jersey http://www.mulesoft.org/schema/mule/jersey/current/mule-jersey.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
-    <s3:config name="Amazon_S3__Configuration" accessKey="AKIAJD3CVBRXLVLKX4DA" secretKey="vZh6DT9VToiCBph4jvWB6o52eLt4c7yys9CacugV" doc:name="Amazon S3: Configuration"/>
+    <context:property-placeholder location="s3-access.properties"/>
+    <s3:config name="Amazon_S3__Configuration" accessKey="${s3-accesskey}" secretKey="${s3-secretkey}" doc:name="Amazon S3: Configuration"/>
     <http:listener-config name="HTTP_Listener_Configuration_REST_API" host="0.0.0.0" port="8082" doc:name="HTTP Listener Configuration" basePath="/webapi"/>
-    <flow name="mule-integration-challengeFlow">
+    <file:connector name="Errors-File" outputPattern="mule-integration-challenge-errors-#[server.dateTime.format('yyyy-MM-dd')].txt" autoDelete="true" outputAppend="true" streaming="true" validateConnections="true" doc:name="File"/>
+   	<flow name="s3-mongodb-integration-flow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/getObject"  doc:name="HTTP"/>
-     	<s3:get-object config-ref="Amazon_S3__Configuration" bucketName="nemacrux2-bucket" doc:name="Amazon S3" key="#[message.inboundProperties.'http.query.params'.filename]"/>
+     	<s3:get-object config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" doc:name="Amazon S3" key="#[message.inboundProperties.'http.query.params'.filename]"/>
         <custom-transformer class="com.helios.challenge.transformers.S3ObjectHandler" doc:name="Java S3Object Hanlder"/>
         <custom-transformer class="com.helios.challenge.transformers.XmlToJsonTransformer" doc:name="Java Xml-Json Transformer"/>
         <component class="com.helios.challenge.datalayer.JsonContentHandler" doc:name="Java Database Service"/>
         <logger message="#[message.payload]" level="INFO" doc:name="Logger"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="S3 Object processing failed" level="ERROR" doc:name="Logger"/>
+            <set-payload value="Error: #[exception.cause] resulted in #[exception] #[System.getProperty('line.separator')]" doc:name="Set Payload"/>
+            <file:outbound-endpoint path="/Users/nesmarin/Downloads" responseTimeout="10000" doc:name="File" connector-ref="Errors-File"/>
+        </catch-exception-strategy>
     </flow>
-    <flow name="mule-integration-challengeFlow1">
+    <flow name="restws-mongodb-integration-flow">
         <http:listener config-ref="HTTP_Listener_Configuration_REST_API" path="/*" doc:name="HTTP"/>
         <jersey:resources doc:name="REST">
             <component class="com.helios.challenge.resources.FileResource"/>
