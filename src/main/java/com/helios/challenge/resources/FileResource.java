@@ -12,14 +12,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.helios.challenge.model.ErrorMessage;
-import com.helios.challenge.service.DatabaseMongoServiceImpl;
-import com.helios.challenge.service.IDatabaseService;
+import com.helios.challenge.service.MongoDbDocumentServiceImpl;
+import com.helios.challenge.service.IDocumentService;
 
 @Path("/files")
 @Produces(MediaType.APPLICATION_JSON)
 public class FileResource {
 	
-	IDatabaseService databaseService = new DatabaseMongoServiceImpl();
+	IDocumentService databaseService = new MongoDbDocumentServiceImpl();
 	
 	@GET
 	public Response getAllFiles(){

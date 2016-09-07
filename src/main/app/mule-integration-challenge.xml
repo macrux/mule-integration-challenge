@@ -24,7 +24,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
      	<s3:get-object config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" doc:name="Amazon S3" key="#[message.inboundProperties.'http.query.params'.filename]"/>
         <custom-transformer class="com.helios.challenge.transformers.S3ObjectHandler" doc:name="Java S3Object Hanlder"/>
         <custom-transformer class="com.helios.challenge.transformers.XmlToJsonTransformer" doc:name="Java Xml-Json Transformer"/>
-        <component class="com.helios.challenge.datalayer.JsonContentHandler" doc:name="Json Content Handler"/>
+        <component class="com.helios.challenge.datalayer.DataHandler" doc:name="Data Handler"/>
         <logger message="#[message.payload]" level="INFO" doc:name="Logger"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
             <logger message="S3 Object processing failed" level="ERROR" doc:name="Logger"/>

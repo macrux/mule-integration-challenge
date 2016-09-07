@@ -17,18 +17,12 @@ import com.mongodb.Block;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 
-public class DatabaseMongoServiceImpl implements IDatabaseService {
+public class MongoDbDocumentServiceImpl implements IDocumentService {
 
-	private static final Logger logger = LoggerFactory.getLogger(DatabaseMongoServiceImpl.class);
-
-	private static final String DATABASE_NAME = "test";
-	private static final String COLLECTION_NAME = "filetest";
-
-	private MongoDatabase database = MongoDB.getMongoDB(DATABASE_NAME);
-//	private MongoDatabase database = MongoDB.getMongoDB();
-	private MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+	private static final Logger logger = LoggerFactory.getLogger(MongoDbDocumentServiceImpl.class);
+	
+	private MongoCollection<Document> collection = MongoDB.getCollection();
 
 	@Override
 	public void insertDocument(String document) {
@@ -38,7 +32,7 @@ public class DatabaseMongoServiceImpl implements IDatabaseService {
 			if (!documentExits(documentName)) {
 				collection.insertOne(Document.parse(document));
 			} else {
-				logger.warn("the document with name {} already exists in database. It is goint to be replaced",
+				logger.warn("the document with name {} already exists in database. It will be replaced",
 						documentName);
 				deleteDocument(documentName);
 				collection.insertOne(Document.parse(document));

@@ -8,17 +8,17 @@ import org.mule.api.transport.PropertyScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.helios.challenge.service.DatabaseMongoServiceImpl;
-import com.helios.challenge.service.IDatabaseService;
+import com.helios.challenge.service.IDocumentService;
+import com.helios.challenge.service.MongoDbServiceFactory;
 import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
-public class JsonContentHandler implements Callable {
+public class DataHandler implements Callable {
 	
-	private static final Logger logger = LoggerFactory.getLogger(JsonContentHandler.class);
-	IDatabaseService databaseService = new DatabaseMongoServiceImpl();
+	private static final Logger logger = LoggerFactory.getLogger(DataHandler.class);
 	
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
+		IDocumentService databaseService = MongoDbServiceFactory.getService();
 		String filename = eventContext.getMessage().getProperty(FILENAME_MULE_MSG_PROPERTY, PropertyScope.INVOCATION);
 		if(!(eventContext.getMessage().getPayload() instanceof NullPayload)){
 			String jsonString = eventContext.getMessage().getPayloadAsString();
