@@ -30,7 +30,7 @@ public class S3ObjectHandler extends AbstractMessageTransformer {
 	public Object transformMessage(MuleMessage message, String outputEncoding) throws TransformerException {
 		S3Object s3Object = (S3Object) message.getPayload();
 		// The S3Object content is an InputStream from which
-		// a String is created
+		// a String is created after processing the InputStrem
 		String xmlString = processInputStream(s3Object.getObjectContent());
 		// Change the full payload to S3Object content
 		if(!xmlString.isEmpty()){

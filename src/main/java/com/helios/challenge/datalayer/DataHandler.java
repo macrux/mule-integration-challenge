@@ -16,6 +16,10 @@ public class DataHandler implements Callable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DataHandler.class);
 	
+	/**
+	 * Extract the JSON payload from the MuleMessage notified through the mule event
+	 * and store it in the database.
+	 */
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
 		IDocumentService databaseService = new MongoDbDocumentServiceImpl();

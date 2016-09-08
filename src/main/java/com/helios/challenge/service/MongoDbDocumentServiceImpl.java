@@ -58,7 +58,7 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 
 	@Override
 	public String getDocumentByName(String filename) {
-		FindIterable<Document> iterable = collection.find(eq(name.toString(), filename));
+		FindIterable<Document> iterable = collection.find(eq(name.toString(), filename)).limit(1);
 		Document document = iterable.first();
 		if (document != null) {
 			document.remove(_id.toString());

@@ -21,6 +21,11 @@ public class FileResource {
 	
 	IDocumentService databaseService = new MongoDbDocumentServiceImpl();
 	
+	/**
+	 * Retrieves a name's list of the documents stored in the database/collection
+	 * specified by the database properties file.
+	 * @return Response with a document's names list encoded in JSON.
+	 */
 	@GET
 	public Response getAllFiles(){
 		List<String> documentNames;
@@ -31,6 +36,13 @@ public class FileResource {
 				.build();
 	}
 	
+	/**
+	 * Retrieves the document specified by the given name from the database.
+	 * If the document is not found an error message is thrown.
+	 * @param filename String with the document name
+	 * @return Response with the document payload encoded in JSON.
+	 * @throws NotFoundException if the document does not exist in the database.
+	 */
 	@GET
 	@Path("/{filename}")
 	public Response getFileByName(@PathParam("filename") String filename){
