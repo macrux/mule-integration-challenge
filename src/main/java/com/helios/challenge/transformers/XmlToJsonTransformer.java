@@ -1,7 +1,6 @@
 package com.helios.challenge.transformers;
 
-import static com.helios.challenge.constants.ChallengeConstants.FILENAME_JSON_KEY;
-import static com.helios.challenge.constants.ChallengeConstants.FILENAME_MULE_MSG_PROPERTY;
+import static com.helios.challenge.constants.FlowConstants.filename;
 
 import org.json.JSONObject;
 import org.json.XML;
@@ -12,6 +11,7 @@ import org.mule.transformer.AbstractMessageTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.helios.challenge.constants.FlowConstants;
 import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
 public class XmlToJsonTransformer extends AbstractMessageTransformer {
@@ -31,9 +31,9 @@ public class XmlToJsonTransformer extends AbstractMessageTransformer {
 		try {
 			String xmlString = (String) message.getPayload();
 			JSONObject jsonObject = XML.toJSONObject(xmlString);
-			String filename = message.getProperty(FILENAME_MULE_MSG_PROPERTY, PropertyScope.INVOCATION);
+			String fileNameProperty = message.getProperty(filename.toString(), PropertyScope.INVOCATION);
 			// Add filename as a key to the JSON object
-			jsonObject.put(FILENAME_JSON_KEY, filename);
+			jsonObject.put(FlowConstants.name.toString(), fileNameProperty);
 			// Change payload to JSON String
 			message.setPayload(jsonObject.toString());
 			// Add the filename as a Mule Message property

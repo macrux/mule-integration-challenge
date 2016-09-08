@@ -1,7 +1,5 @@
 package com.helios.challenge.transformers;
 
-import static com.helios.challenge.constants.ChallengeConstants.FILENAME_MULE_MSG_PROPERTY;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +13,7 @@ import org.mule.transformer.AbstractMessageTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.helios.challenge.constants.FlowConstants;
 import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
 public class S3ObjectHandler extends AbstractMessageTransformer {
@@ -49,7 +48,7 @@ public class S3ObjectHandler extends AbstractMessageTransformer {
 			}
 		}
 		// Add the filename as a Mule Message property
-		message.setProperty(FILENAME_MULE_MSG_PROPERTY, s3Object.getKey(), PropertyScope.INVOCATION);
+		message.setProperty(FlowConstants.filename.toString(), s3Object.getKey(), PropertyScope.INVOCATION);
 		return message;
 	}
 

@@ -1,6 +1,6 @@
 package com.helios.challenge.datalayer;
 
-import static com.helios.challenge.constants.ChallengeConstants.FILENAME_MULE_MSG_PROPERTY;
+import static com.helios.challenge.constants.FlowConstants.filename;
 
 import org.mule.api.MuleEventContext;
 import org.mule.api.lifecycle.Callable;
@@ -19,13 +19,13 @@ public class DataHandler implements Callable {
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
 		IDocumentService databaseService = new MongoDbDocumentServiceImpl();
-		String filename = eventContext.getMessage().getProperty(FILENAME_MULE_MSG_PROPERTY, PropertyScope.INVOCATION);
+		String filenameProperty = eventContext.getMessage().getProperty(filename.toString(), PropertyScope.INVOCATION);
 		if(!(eventContext.getMessage().getPayload() instanceof NullPayload)){
 			String jsonString = eventContext.getMessage().getPayloadAsString();
-			logger.info("Inserting file "+filename+" into mongodb");
+			logger.info("Inserting file "+filenameProperty+" into mongodb");
 			databaseService.insertDocument(jsonString);
 		} else {
-			logger.warn("The message payload for the file "+filename+" is null");
+			logger.warn("The message payload for the file "+filenameProperty+" is null");
 		}
 		
 		return eventContext.getMessage();

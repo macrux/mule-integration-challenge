@@ -1,7 +1,7 @@
 package com.helios.challenge.service;
 
-import static com.helios.challenge.constants.ChallengeConstants.FILENAME_JSON_KEY;
-import static com.helios.challenge.constants.ChallengeConstants._ID_MONGO_KEY;
+import static com.helios.challenge.constants.FlowConstants._id;
+import static com.helios.challenge.constants.FlowConstants.name;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 	@Override
 	public void insertDocument(String document) {
 		JSONObject jsonObject = new JSONObject(document);
-		String documentName = (String) jsonObject.get(FILENAME_JSON_KEY);
+		String documentName = (String) jsonObject.get(name.toString());
 		try {
 			if (!documentExits(documentName)) {
 				collection.insertOne(Document.parse(document));
@@ -47,21 +47,21 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 
 	@Override
 	public boolean documentExits(String documentName) {
-		long count = collection.count(eq(FILENAME_JSON_KEY, documentName));
+		long count = collection.count(eq(name.toString(), documentName));
 		return count > 0;
 	}
 
 	@Override
 	public void deleteDocument(String documentName) {
-		collection.deleteOne(eq(FILENAME_JSON_KEY, documentName));
+		collection.deleteOne(eq(name.toString(), documentName));
 	}
 
 	@Override
 	public String getDocumentByName(String filename) {
-		FindIterable<Document> iterable = collection.find(eq(FILENAME_JSON_KEY, filename));
+		FindIterable<Document> iterable = collection.find(eq(name.toString(), filename));
 		Document document = iterable.first();
 		if (document != null) {
-			document.remove(_ID_MONGO_KEY);
+			document.remove(_id.toString());
 			return document.toJson();
 		} else {
 			return "";
@@ -74,7 +74,7 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 		FindIterable<Document> iterable = collection.find();
 		iterable.forEach(new Block<Document>() {
 			public void apply(final Document document) {
-				documentNames.add(document.get(FILENAME_JSON_KEY).toString());
+				documentNames.add(document.get(name.toString()).toString());
 			}
 		});
 		return documentNames;

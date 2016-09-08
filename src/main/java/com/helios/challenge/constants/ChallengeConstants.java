@@ -1,5 +1,9 @@
 package com.helios.challenge.constants;
 
+@Deprecated
+/*
+ * Use FlowConstans instead this class.
+ */
 public class ChallengeConstants {
 
 	/**
