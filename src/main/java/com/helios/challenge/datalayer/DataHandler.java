@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helios.challenge.service.IDocumentService;
-import com.helios.challenge.service.MongoDbServiceFactory;
+import com.helios.challenge.service.MongoDbDocumentServiceImpl;
 import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
 public class DataHandler implements Callable {
@@ -18,7 +18,7 @@ public class DataHandler implements Callable {
 	
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
-		IDocumentService databaseService = MongoDbServiceFactory.getService();
+		IDocumentService databaseService = new MongoDbDocumentServiceImpl();
 		String filename = eventContext.getMessage().getProperty(FILENAME_MULE_MSG_PROPERTY, PropertyScope.INVOCATION);
 		if(!(eventContext.getMessage().getPayload() instanceof NullPayload)){
 			String jsonString = eventContext.getMessage().getPayloadAsString();

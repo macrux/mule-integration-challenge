@@ -12,8 +12,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.helios.challenge.model.ErrorMessage;
-import com.helios.challenge.service.MongoDbDocumentServiceImpl;
 import com.helios.challenge.service.IDocumentService;
+import com.helios.challenge.service.MongoDbDocumentServiceImpl;
 
 @Path("/files")
 @Produces(MediaType.APPLICATION_JSON)

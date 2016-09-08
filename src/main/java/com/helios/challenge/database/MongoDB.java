@@ -13,25 +13,51 @@ import com.mongodb.client.MongoDatabase;
 public class MongoDB {
 
 	private static final Logger logger = LoggerFactory.getLogger(MongoDB.class);
-	private static final String DATABASE_NAME = "test";
-	private static final String COLLECTION_NAME = "filetest";
+	private final String DATABASE;
+	private final String COLLECTION;
 	
-	private static MongoClient mongoClient = null;
+	private MongoClient mongoClient = null;
+	
+	public MongoDB(){
+		DATABASE = "challenge";
+		COLLECTION = "files";
+	}
+	
+	public MongoDB(String database, String collection) {
+		DATABASE = database;
+		COLLECTION = collection;
+	}
 
-	public static MongoDatabase getMongoDB() {
+	public MongoClient getMongoClient(){
 		if (mongoClient == null) {
 			mongoClient = new MongoClient();
 			logger.info("New MongoClient connected to {}", mongoClient.getConnectPoint());
 		}
-
-		return mongoClient.getDatabase(DATABASE_NAME);
+		
+		return mongoClient;
+	}
+	
+	public MongoDatabase getMongoDB() {
+		return getMongoClient().getDatabase(DATABASE);
 	}
 
-	public static MongoCollection<Document> getCollection() {
-		MongoCollection<Document> collection = getMongoDB().getCollection(COLLECTION_NAME);
+	public MongoCollection<Document> getCollection() {
+		MongoCollection<Document> collection = getMongoDB().getCollection(COLLECTION);
 		// add filename as unique index in the collection
 		collection.createIndex(new Document(FILENAME_JSON_KEY, 1));
 		return collection;
+	}
+	
+	public void dropDatabase(){
+		if(mongoClient != null){
+			mongoClient.dropDatabase(DATABASE);
+		}
+	}
+	
+	public void closeClient(){
+		if(mongoClient != null){
+			mongoClient.close();
+		}
 	}
 
 }

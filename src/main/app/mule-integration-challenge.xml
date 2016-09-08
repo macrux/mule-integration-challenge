@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
         <logger message="#[message.payload]" level="INFO" doc:name="Logger"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
             <logger message="S3 Object processing failed" level="ERROR" doc:name="Logger"/>
-            <set-payload value="Error: #[exception.cause] resulted in #[exception] #[System.getProperty('line.separator')]" doc:name="Set Payload"/>
+            <set-payload value="Error: (#[server.dateTime.format('HH:mm:ss')]) #[exception.cause] resulted in #[exception] #[System.getProperty('line.separator')]" doc:name="Set Payload"/>
             <file:outbound-endpoint path="/Users/nesmarin/Downloads" responseTimeout="10000" doc:name="File" connector-ref="Errors-File"/>
         </catch-exception-strategy>
     </flow>

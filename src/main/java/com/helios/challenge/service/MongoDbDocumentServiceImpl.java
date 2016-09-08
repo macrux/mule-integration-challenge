@@ -21,8 +21,11 @@ import com.mongodb.client.MongoCollection;
 public class MongoDbDocumentServiceImpl implements IDocumentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(MongoDbDocumentServiceImpl.class);
-	
-	private MongoCollection<Document> collection = MongoDB.getCollection();
+	private MongoCollection<Document> collection;
+
+	public MongoDbDocumentServiceImpl() {
+		collection = new MongoDB().getCollection();
+	}
 
 	@Override
 	public void insertDocument(String document) {
