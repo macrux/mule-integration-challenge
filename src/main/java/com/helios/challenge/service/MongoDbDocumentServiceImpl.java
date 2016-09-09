@@ -21,10 +21,14 @@ import com.mongodb.client.MongoCollection;
 public class MongoDbDocumentServiceImpl implements IDocumentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(MongoDbDocumentServiceImpl.class);
-	private MongoCollection<Document> collection;
+	private MongoCollection<Document> mCollection;
 
 	public MongoDbDocumentServiceImpl() {
-		collection = new MongoDB().getCollection();
+		mCollection = new MongoDB().getCollection();
+	}
+	
+	public MongoDbDocumentServiceImpl(String database, String collection){
+		mCollection = new MongoDB(database, collection).getCollection();
 	}
 
 	@Override
@@ -33,12 +37,12 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 		String documentName = (String) jsonObject.get(name.toString());
 		try {
 			if (!documentExits(documentName)) {
-				collection.insertOne(Document.parse(document));
+				mCollection.insertOne(Document.parse(document));
 			} else {
 				logger.warn("the document with name {} already exists in database. It will be replaced",
 						documentName);
 				deleteDocument(documentName);
-				collection.insertOne(Document.parse(document));
+				mCollection.insertOne(Document.parse(document));
 			}
 		} catch (MongoException e) {
 			logger.error("Exception inserting document: ", document, e);
@@ -47,18 +51,18 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 
 	@Override
 	public boolean documentExits(String documentName) {
-		long count = collection.count(eq(name.toString(), documentName));
+		long count = mCollection.count(eq(name.toString(), documentName));
 		return count > 0;
 	}
 
 	@Override
 	public void deleteDocument(String documentName) {
-		collection.deleteOne(eq(name.toString(), documentName));
+		mCollection.deleteOne(eq(name.toString(), documentName));
 	}
 
 	@Override
 	public String getDocumentByName(String filename) {
-		FindIterable<Document> iterable = collection.find(eq(name.toString(), filename)).limit(1);
+		FindIterable<Document> iterable = mCollection.find(eq(name.toString(), filename)).limit(1);
 		Document document = iterable.first();
 		if (document != null) {
 			document.remove(_id.toString());
@@ -71,7 +75,7 @@ public class MongoDbDocumentServiceImpl implements IDocumentService {
 	@Override
 	public List<String> getAllDocumentNames() {
 		ArrayList<String> documentNames = new ArrayList<String>();
-		FindIterable<Document> iterable = collection.find();
+		FindIterable<Document> iterable = mCollection.find();
 		iterable.forEach(new Block<Document>() {
 			public void apply(final Document document) {
 				documentNames.add(document.get(name.toString()).toString());

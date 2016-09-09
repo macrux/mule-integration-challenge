@@ -28,6 +28,18 @@ public class MongoDB {
 	private MongoClient mongoClient = null;
 	
 	public MongoDB(){
+		loadProperties();
+		mDATABASE = props.getProperty(DATABASE.name());
+		mCOLLECTION = props.getProperty(COLLECTION.name());
+	}
+	
+	public MongoDB(String database, String collection) {
+		loadProperties();
+		mDATABASE = database;
+		mCOLLECTION = collection;
+	}
+
+	private void loadProperties() {
 		props = new Properties();
 		try {
 			props.load(new FileInputStream("config/mongo.properties"));
@@ -36,16 +48,8 @@ public class MongoDB {
 		} catch (Exception e) {
 			logger.error("Exception reading mongo.properties file: ", e);
 		}
-		
-		mDATABASE = props.getProperty(DATABASE.name());
-		mCOLLECTION = props.getProperty(COLLECTION.name());
 	}
 	
-	public MongoDB(String database, String collection) {
-		mDATABASE = database;
-		mCOLLECTION = collection;
-	}
-
 	public MongoClient getMongoClient(){
 		if (mongoClient == null) {
 			String hostProperty = props.getProperty(HOST.name());
@@ -71,6 +75,7 @@ public class MongoDB {
 	public void dropDatabase(){
 		if(mongoClient != null){
 			mongoClient.dropDatabase(mDATABASE);
+			logger.info("Database {} was dropped", mDATABASE);
 		}
 	}
 	
