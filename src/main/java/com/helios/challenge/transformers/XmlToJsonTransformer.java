@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helios.challenge.constants.FlowConstants;
-import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
 public class XmlToJsonTransformer extends AbstractMessageTransformer {
 
@@ -27,8 +26,6 @@ public class XmlToJsonTransformer extends AbstractMessageTransformer {
 	 */
 	@Override
 	public Object transformMessage(MuleMessage message, String outputEncoding) throws TransformerException {
-
-		try {
 			String xmlString = (String) message.getPayload();
 			JSONObject jsonObject = XML.toJSONObject(xmlString);
 			String fileNameProperty = message.getProperty(filename.toString(), PropertyScope.INVOCATION);
@@ -38,11 +35,6 @@ public class XmlToJsonTransformer extends AbstractMessageTransformer {
 			message.setPayload(jsonObject.toString());
 			// Add the filename as a Mule Message property
 			return message;
-		} catch (Exception e) {
-			logger.error("Exception in transform message method: ", e);
-			message.setPayload(new NullPayload());
-		}
-		return message;
 	}
 
 }

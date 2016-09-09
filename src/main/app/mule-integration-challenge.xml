@@ -20,15 +20,24 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
     <http:listener-config name="HTTP_Listener_Configuration_REST_API" host="0.0.0.0" port="8082" doc:name="HTTP Listener Configuration" basePath="/webapi"/>
     <file:connector name="Errors-File" outputPattern="mule-integration-challenge-errors-#[server.dateTime.format('yyyy-MM-dd')].txt" autoDelete="true" outputAppend="true" streaming="true" validateConnections="true" doc:name="File"/>
    	<flow name="s3-mongodb-integration-flow">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/getObject"  doc:name="HTTP"/>
-     	<s3:get-object config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" doc:name="Amazon S3" key="#[message.inboundProperties.'http.query.params'.filename]"/>
-        <custom-transformer class="com.helios.challenge.transformers.S3ObjectHandler" doc:name="Java S3Object Hanlder"/>
-        <custom-transformer class="com.helios.challenge.transformers.XmlToJsonTransformer" doc:name="Java Xml-Json Transformer"/>
-        <component class="com.helios.challenge.datalayer.DataHandler" doc:name="Data Handler"/>
-        <logger message="#[message.payload]" level="INFO" doc:name="Logger"/>
+        <poll frequency="5000" doc:name="Poll">
+            <s3:list-objects config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" delimiter="/" doc:name="Amazon S3 (list files)"/>
+        </poll>
+        <foreach collection="#[message.payload.objectSummaries]" doc:name="For Each">
+            <s3:get-object config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" key="#[message.payload.key]" doc:name="Amazon S3 (get object)"/>
+            <set-variable variableName="s3ObjectKey" value="#[message.payload.key]" doc:name="Store S3 object name"/>
+            <logger message="Processing file: #[flowVars.s3ObjectKey]" level="INFO" doc:name="Logger"/>
+            <custom-transformer class="com.helios.challenge.transformers.S3ObjectHandler" doc:name="Java S3Object Hanlder"/>
+            <custom-transformer class="com.helios.challenge.transformers.XmlToJsonTransformer" doc:name="Java Xml-Json Transformer"/>
+            <component class="com.helios.challenge.datalayer.DataHandler" doc:name="Data Handler"/>
+            <s3:copy-object config-ref="Amazon_S3__Configuration" sourceBucketName="${bucket-name}" sourceKey="#[flowVars.s3ObjectKey]" destinationBucketName="${bucket-name}" destinationKey="processed/#[flowVars.s3ObjectKey]-#[server.dateTime.format('dd-MM-yy.HH:mm:ss')]" doc:name="Amazon S3 (copy to /processed)"/>
+            <s3:delete-object config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" key="#[flowVars.s3ObjectKey]" doc:name="Amazon S3 (delete)"/>
+        </foreach>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
             <logger message="S3 Object processing failed" level="ERROR" doc:name="Logger"/>
-            <set-payload value="Error: (#[server.dateTime.format('HH:mm:ss')]) #[exception.cause] resulted in #[exception] #[System.getProperty('line.separator')]" doc:name="Set Payload"/>
+            <s3:copy-object config-ref="Amazon_S3__Configuration" sourceBucketName="${bucket-name}" sourceKey="#[flowVars.s3ObjectKey]" destinationBucketName="${bucket-name}" destinationKey="error/#[flowVars.s3ObjectKey]-failed-#[server.dateTime.format('dd-MM-yy.HH:mm:ss')]" doc:name="Amazon S3 (copy to /error)"/>
+            <s3:delete-object config-ref="Amazon_S3__Configuration" bucketName="${bucket-name}" key="#[flowVars.s3ObjectKey]" doc:name="Amazon S3 (delete)"/>
+            <set-payload value="#[server.dateTime.format('HH:mm:ss')] Error when processing '#[flowVars.s3Objectkey]': #[exception.cause] resulted in #[exception] #[System.getProperty('line.separator')]" doc:name="Set Payload"/>
             <file:outbound-endpoint path="/Users/nesmarin/Downloads" responseTimeout="10000" doc:name="File" connector-ref="Errors-File"/>
         </catch-exception-strategy>
     </flow>

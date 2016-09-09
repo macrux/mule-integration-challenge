@@ -36,6 +36,7 @@ public class S3ObjectHandler extends AbstractMessageTransformer {
 		if(!xmlString.isEmpty()){
 			message.setPayload(xmlString);	
 		} else {
+			//TODO should it throw nullpayloadexception instead set an empty string payload?
 			message.setPayload(new NullPayload());
 		}
 
@@ -63,7 +64,7 @@ public class S3ObjectHandler extends AbstractMessageTransformer {
 			}
 			return xmlStringBuilder.toString();
 		} catch (Exception e) {
-			logger.error("Exception in transform message method: ", e);
+			logger.error("Exception processing InputStream: ", e);
 		} finally {
 			// Resources must be closed
 			if (bufferedReader != null) {

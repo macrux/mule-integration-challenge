@@ -10,28 +10,22 @@ import org.slf4j.LoggerFactory;
 
 import com.helios.challenge.service.IDocumentService;
 import com.helios.challenge.service.MongoDbDocumentServiceImpl;
-import com.mulesoft.mmc.agent.v3.dto.NullPayload;
 
 public class DataHandler implements Callable {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(DataHandler.class);
-	
+
 	/**
-	 * Extract the JSON payload from the MuleMessage notified through the mule event
-	 * and store it in the database.
+	 * Extract the JSON payload from the MuleMessage notified through the mule
+	 * event and store it in the database.
 	 */
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
 		IDocumentService databaseService = new MongoDbDocumentServiceImpl();
 		String filenameProperty = eventContext.getMessage().getProperty(filename.toString(), PropertyScope.INVOCATION);
-		if(!(eventContext.getMessage().getPayload() instanceof NullPayload)){
-			String jsonString = eventContext.getMessage().getPayloadAsString();
-			logger.info("Inserting file "+filenameProperty+" into mongodb");
-			databaseService.insertDocument(jsonString);
-		} else {
-			logger.warn("The message payload for the file "+filenameProperty+" is null");
-		}
-		
+		String jsonString = eventContext.getMessage().getPayloadAsString();
+		logger.info("Inserting file " + filenameProperty + " into mongodb");
+		databaseService.insertDocument(jsonString);
 		return eventContext.getMessage();
 	}
 
